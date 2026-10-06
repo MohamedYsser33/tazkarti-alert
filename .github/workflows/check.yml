@@ -1,0 +1,18 @@
+name: check reachability
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Tazkarti feeds
+        run: |
+          for f in matches-list-json events-list-json fanQueuesMatch-list-json; do
+            curl -s --compressed -o body.txt -w "$f: http=%{http_code} bytes=%{size_download} type=%{content_type}\n" \
+              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
+              -H "Accept: application/json, text/plain, */*" \
+              "https://tazkarti.com/data/$f.json?_=$(date +%s)000"
+            head -c 120 body.txt; echo; echo
+          done
